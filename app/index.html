@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/app.js"></script>
+  </head>
+  <body class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h4>Token balances</h4>
+          <div class="row hide js-wallet-info-template">
+            <h5 class="js-address"></h5>
+            <ul>
+            </ul>
+          </div>
+          <li class="hide js-token-info-template">
+              <b class="js-token"></b>: <span class="js-token-amount"></span>, allowed <span class="js-token-all"></span>.
+              <span class="hide js-set-all">
+                (<a>Set</a> to
+                <input style="width:60;" type="number" value="10" />)
+              </span>
+          </li>
+
+         <div class="row js-wallet-info">
+
+         </div>
+    </div>
+    <div class="col-md-4">
+      <h4>Orders</h4>
+        <li class="hide js-order-template">
+          <span class="js-order-sell-amount"></span>
+          /
+          <span class="js-order-buy-amount"></span>
+          (<span class="js-order-price"></span>)
+        </li>
+        <div class="col-md-2 js-buy-orders">
+          <h5> Buy </h5>
+
+            <ul>
+
+            </ul>
+        </div>
+        <div class="col-md-2 js-sell-orders">
+          <h5> Sell </h5>
+
+            <ul>
+
+            </ul>
+        </div>
+    </div>
+  </div>
+  <div class="row">
+    <h4>Create Order</h4>
+    <div class="col-md-3 js-buy-xbt">
+      <h5> Buy Xbt for Eth</h5>
+      <form class="form form-horizontal js-create-order-form">
+        <input type="hidden" name="demand-token" value="XBT">
+        <input type="hidden" name="supply-token" value="ETH">
+        <div class="form-group">
+          <label for="demand-amount" class="col-md-3">Amount</label>
+          <input style="width:80;"  required class="form-control col-md-3 js-update-supply" name="demand-amount" value="1">
+        </div>
+        <div class="form-group">
+          <label for="price" class="col-md-3">Price</label>
+          <input style="width:80;"  class="form-control col-md-3 js-update-supply" name="price">
+        </div>
+        <div class="form-group">
+          <label for="supply-amount" class="col-md-3">ETH needed</label>
+          <input style="width:80;"  required class="form-control col-md-3" name="supply-amount">
+        </div>
+        <button class="btn btn-info js-create-order">Go!</button>
+      </form>
+      </div>
+    <div class="col-md-3 js-buy-eth">
+      <h5> Buy Eth for Xbt</h5>
+      <form class="form form-horizontal js-create-order-form">
+        <input type="hidden" name="demand-token" value="ETH">
+        <input type="hidden" name="supply-token" value="XBT">
+        <div class="form-group">
+          <label for="demand-amount" class="col-md-3">Amount</label>
+          <input style="width:80;"  required class="form-control col-md-3 js-update-supply" name="demand-amount" value="1">
+        </div>
+        <div class="form-group">
+          <label for="price" class="col-md-3">Price</label>
+          <input style="width:80;"  class="form-control col-md-3 js-update-supply" name="price">
+        </div>
+        <div class="form-group">
+          <label for="supply-amount" class="col-md-3">XBT needed</label>
+          <input style="width:80;"  required class="form-control col-md-3" name="supply-amount">
+        </div>
+        <button class="btn btn-info js-create-order">Go!</button>
+      </form>
+    </div>
+  </div>
+  </body>
+</html>

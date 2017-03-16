@@ -1,0 +1,18 @@
+{
+  "default": {
+    "gas": "auto",
+    "contracts": {
+      "EthToken": {
+      },
+      "SafeMath": {
+        "deploy": false
+      },
+      "ERC20": {
+        "deploy": false
+      },
+      "ERC20Basic": {
+        "deploy": false
+      }
+    }
+  }
+}
