@@ -1,16 +1,20 @@
 pragma solidity ^0.4.8;
 
 import './token/ERC20.sol';
-import "./Util.sol";
+import "./Utilities.sol";
+import "./SafeMath.sol";
 import "./EventfulMarket.sol";
 
-contract SimpleMarket is EventfulMarket  {
+contract SimpleMarket is EventfulMarket,
+                         Utilities,
+                         SafeMath
+                           {
   event Log(
       string message,
       uint value
   );
 
-  struct Order { //move to a library
+  struct Order {
     uint     supply_amount;
     ERC20    supply_token;
     uint     demand_amount;
@@ -20,35 +24,88 @@ contract SimpleMarket is EventfulMarket  {
   }
 
   mapping (uint => Order) public orders;
-
   uint public last_order_id;
 
-
-  function getOrderAtId(uint index) public constant returns(uint, ERC20, uint, ERC20) {
-      return (orders[index].supply_amount, orders[index].supply_token, orders[index].demand_amount, orders[index].demand_token);
+  function createLimitOrder(  uint  supply_amount,
+                              ERC20 supply_token,
+                              uint  demand_amount,
+                              ERC20 demand_token) {
+    // assert(msg.sender == );
+    // check all the values
+    supply_token.transferFrom(msg.sender, this, supply_amount);
+    createOrder(msg.sender, supply_amount, supply_token, demand_amount, demand_token);
   }
 
-  function next_id() internal returns (uint) {
-      last_order_id++; return last_order_id;
+  function executeOrder(uint id, uint demand_amount) {
+    // syncronized (only for id)
+    Order order = orders[id];
+    assert(demand_amount <= order.supply_amount);
+
+    uint supply_amount = SafeMath.safeMul(order.demand_amount, demand_amount) / order.supply_amount; //todo: overflow, remainder :(
+
+    order.demand_token.transferFrom(msg.sender, this, supply_amount);
+    uint mirror_order_id = createOrder(msg.sender, supply_amount, order.demand_token, demand_amount, order.supply_token);
+
+    mutualOrderTrade(id, mirror_order_id);
   }
 
-  // function simpleMethod() public constant returns(uint) {
-  //   return 1222254;
-  // }
-
-  function createOrder( uint  supply_amount,
-                        ERC20 supply_token,
-                        uint  demand_amount,
-                        ERC20 demand_token) {
-    createOrderOnBehalf(msg.sender, supply_amount, supply_token, demand_amount, demand_token);
+  function cancelOrder(uint id) {
+    Order order = orders[id];
+    assert(order.owner == msg.sender);
+    order.supply_token.transfer(order.owner, order.supply_amount);
+    delete orders[id];
   }
 
-  function createOrderOnBehalf(
+  function mutualOrderTrade(uint older_order_id, uint newerOrderId) internal {
+    Order oldOrder = orders[older_order_id];
+    Order newOrder = orders[newerOrderId];
+
+    assert(oldOrder.demand_token == newOrder.supply_token);
+    assert(newOrder.demand_token == oldOrder.supply_token);
+    assert(oldOrder.demand_amount *  newOrder.demand_amount <= oldOrder.supply_amount * newOrder.supply_amount);
+    assert(older_order_id < newerOrderId);
+
+    uint buying_amount  = Utilities.min(oldOrder.supply_amount, newOrder.demand_amount);         // ETH 10
+    uint selling_amount = SafeMath.safeMul(oldOrder.demand_amount, buying_amount) / oldOrder.supply_amount;
+
+    Log("buying_amount", buying_amount);
+    Log("selling_amount", selling_amount);
+
+    oldOrder.demand_token.transfer(oldOrder.owner, selling_amount);
+    newOrder.demand_token.transfer(newOrder.owner, buying_amount);
+
+    handleOrderDepletion(older_order_id, buying_amount, selling_amount);
+    handleOrderDepletion(newerOrderId, selling_amount, buying_amount);
+  }
+
+  function handleOrderDepletion(uint orderId, uint boughtFromThisOrder, uint soldToThisOrder) internal{
+    Log("handling order depletion ", orderId);
+    Order order = orders[orderId];
+
+    uint supply_left = SafeMath.safeSub(order.supply_amount, boughtFromThisOrder);
+    uint demand_left = SafeMath.safeSub(order.demand_amount, soldToThisOrder);
+
+    assert(supply_left >= 0);
+    assert(demand_left >= 0);
+
+    if (demand_left > 0) {
+      Log("Order is not fulfil. creating new one", 0);
+      createOrder(order.owner, supply_left, order.supply_token, demand_left, order.demand_token);
+    } else {
+      if (supply_left > 0) {
+        order.supply_token.transfer(order.owner, supply_left);
+      }
+    }
+    delete orders[orderId];
+  }
+
+
+  function createOrder(
                         address owner,
                         uint  supply_amount,
                         ERC20 supply_token,
                         uint  demand_amount,
-                        ERC20 demand_token) internal {
+                        ERC20 demand_token) internal returns (uint) {
     Order memory order = Order(
       supply_amount,
       supply_token,
@@ -58,62 +115,17 @@ contract SimpleMarket is EventfulMarket  {
       true);
     uint id = next_id();
 
-    // supply_token.transferFrom(owner, this, supply_amount);
-
     orders[id] = order;
-
+    return id;
   }
 
-  function cancelOrder(uint id) {
-    Util.assert(orders[id].owner == msg.sender);
-    //give user money back
-    deleteOrderInternal(id);
+  function next_id() internal returns (uint) {
+       return ++last_order_id;
   }
 
-  function deleteOrderInternal(uint id) internal {
-    Order order = orders[id];
-    delete orders[id];
-    // LogKill(id, sha3(order.supply_token, order.demand_token), order.author, )
-  }
-
-  function mutualOrderTrade(uint olderOrderId, uint newerOrderId) {
-    Order oldOrder = orders[olderOrderId];
-    Order newOrder = orders[newerOrderId];
-
-    Util.assert(oldOrder.demand_token == newOrder.supply_token);
-    Util.assert(newOrder.demand_token == oldOrder.supply_token);
-    Util.assert(oldOrder.demand_amount / oldOrder.supply_amount <= newOrder.supply_amount / newOrder.demand_amount); // price matches
-    Util.assert(olderOrderId < newerOrderId);
-
-    uint buying_amount  = Util.min(oldOrder.supply_amount, newOrder.demand_amount);         // ETH 10
-    uint selling_amount = oldOrder.demand_amount * (buying_amount / oldOrder.supply_amount); // BTC 1
-
-    Log("buying_amount", buying_amount);
-    Log("selling_amount", selling_amount);
-
-    oldOrder.demand_token.transfer(oldOrder.owner, selling_amount);
-    newOrder.demand_token.transfer(newOrder.owner, buying_amount);
-
-    handleOrderDepletion(olderOrderId, buying_amount, selling_amount);
-    handleOrderDepletion(newerOrderId, selling_amount, buying_amount);
-  }
-
-  function handleOrderDepletion(uint orderId, uint boughtFromThisOrder, uint soldToThisOrder) {
-    Log("handling order depletion ", orderId);
-    Order order = orders[orderId];
-    Util.assert(boughtFromThisOrder <= order.supply_amount);
-    Util.assert(soldToThisOrder <= order.demand_amount);
-
-    if (order.demand_amount > soldToThisOrder) {
-      createOrderOnBehalf(order.owner, order.supply_amount - boughtFromThisOrder, order.supply_token, order.demand_amount - soldToThisOrder, order.demand_token);
-    }
-
-    if (order.supply_amount > boughtFromThisOrder) {
-      order.supply_token.transfer(order.owner, order.supply_amount - boughtFromThisOrder);
-    }
 
 
-  }
+
 }
 
 

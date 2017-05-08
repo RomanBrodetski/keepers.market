@@ -3,50 +3,45 @@ var Tokens = {
   XBT: XbtToken
 }
 
-function updateAccountsInfo() {
-  $(".js-wallet-info").children().remove()
-  web3.eth.accounts.slice(0,3).forEach(function(address){
-    var info = $(".js-wallet-info-template").clone().removeClass("hide js-wallet-info-template").addClass("js-address-" + address)
-    info.find(".js-address").html(address)
-    info.appendTo(".js-wallet-info")
-    Object.values(Tokens).forEach(function(token) {
-      Promise
-        .all([token.symbol(),
-              token.balanceOf(address),
-              token.allowance(address, SimpleMarket.address)])
-        .then(function(r) {
-          var li = $(".js-token-info-template").clone().removeClass("hide js-token-info-template")
-          li.find(".js-token").html(r[0].toString())
-          li.find(".js-token-amount").html(r[1].toNumber())
-          li.find(".js-token-all").html(r[2].toNumber())
-          if (address == web3.eth.defaultAccount) {
-            li.find(".js-set-all").removeClass("hide").attr("data-address", address).data("token", r[0].toString())
-          }
-          li.appendTo($(".js-address-" + address).find("ul"))
-        })
-    })
-  })
-}
+var Decimals = 6
 
-function updateOrdersInfo() {
-  $(".js-buy-orders,.js-sell-orders").children().remove()
-  SimpleMarket.last_order_id().then(function(last_order_id) {
-    console.log(last_order_id)
+function updateAccountsInfo() {
+  _.values(Tokens).forEach(function(token) {
     Promise
-      .all(Array.apply(null, {length: last_order_id}).map(Number.call, Number).map(function(id){
-          SimpleMarket.orders(id)
-        }))
-      .then(function(orders){
-        debugger
-        Console.log(orders)
+      .all([token.symbol(),
+            token.balanceOf(web3.eth.defaultAccount),
+            token.allowance(web3.eth.defaultAccount, KeepersMarket.address)])
+      .then(function(r) {
+        var token = r[0].toString()
+        $(".js-" + token + "-available").val(r[1].toNumber() / Math.pow(10, Decimals))
+        $(".js-" + token + "-allowed").val(r[2].toNumber() / Math.pow(10, Decimals))
       })
   })
 }
 
-$(document).on("click", ".js-set-all a", function(event) {
-  var token = Tokens[$(event.target).closest("span").data("token")]
-  var amount = $(event.target).closest("span").find("input").val()
-  token.approve(SimpleMarket.address, amount).then(function(r){
+function generateOrderHtml(orders, container, pow) {
+  _(orders).each((order) => {
+    let html = $(".js-order-template").clone().removeClass("js-order-template").attr("data-order-id", order.id)
+    html.find(".js-order-volume").html(pow == 1 ? order.demand_amount : order.supply_amount)
+    let price = Math.pow(order.supply_amount / order.demand_amount, pow)
+    html.find(".js-order-price").html(price.toFixed(4)).attr("data-price", price)
+    html.appendTo(container)
+  })
+}
+
+function updateOrdersInfo() {
+  OrderBook.loadOrders().then((pair) => {
+    $(".js-buy-orders tbody,.js-sell-orders tbody").children().remove()
+    generateOrderHtml(pair[0], $(".js-buy-orders tbody"), 1)
+    generateOrderHtml(pair[1], $(".js-sell-orders tbody"), -1)
+  })
+}
+
+$(document).on("click", ".js-set-all", function(event) {
+  var token = Tokens[$(event.target).data("token")]
+  var amount = $(event.target).closest(".input-group").find("input[name='set-to-addon']").val()
+  console.log(amount)
+  token.approve(KeepersMarket.address, amount * Math.pow(10, Decimals)).then((r) => {
     console.log(r)
     updateAccountsInfo()
     updateOrdersInfo()
@@ -55,37 +50,54 @@ $(document).on("click", ".js-set-all a", function(event) {
 
 $(document).on("change", ".js-update-supply", function(event) {
   var form   = $(event.target).closest("form")
-  var demand = parseFloat(form.find("input[name='demand-amount']").val())
-  var price  = parseFloat(form.find("input[name='price']").val())
 
+  var inverse = form.data("update-supply-invert")
+
+  var demand = parseFloat(form.find("input[name='" + (inverse ? "supply" : "demand") + "-amount']").val())
+  var price  = parseFloat(form.find("input[name='price']").val())
   if (!(isNaN(demand) || isNaN(price))) {
-    form.find("input[name='supply-amount']").val(demand * price);
+    form.find("input[name='" + (inverse ? "demand" : "supply" )+ "-amount']").val(demand * price);
   }
 })
 
 
 $(document).on("submit", ".js-create-order-form", function(event) {
   event.preventDefault()
-  event.stopPropagation();
+
   var form   = $(event.target).closest("form")
   var demandAmount = parseFloat(form.find("input[name='demand-amount']").val())
   var supplyAmount = parseFloat(form.find("input[name='supply-amount']").val())
 
   var demandToken = Tokens[form.find("input[name='demand-token']").val()]
   var supplyToken = Tokens[form.find("input[name='supply-token']").val()]
-
   if (!(isNaN(demandAmount) || isNaN(supplyAmount) || !demandToken || !supplyToken)) {
-    SimpleMarket.createOrder(supplyAmount, supplyToken.address, demandAmount, demandToken.address).then(function(result){
+    KeepersMarket.createLimitOrder(supplyAmount * Math.pow(10, Decimals), supplyToken.address, demandAmount * Math.pow(10, Decimals), demandToken.address).then(function(result){
       console.log(result)
+      updateOrdersInfo()
+      updateAccountsInfo()
     })
   }
 })
 
 
+$(document).on("click", ".js-order-execute button", function(event){
+  var tr = $(event.target).closest("tr")
+  var order_id = tr.data("order-id")
+  var amount = parseFloat(tr.find(".js-order-execute-amount").val())
+  console.log(order_id)
+  if(!(isNaN(order_id) || isNaN(amount))) {
+    if (tr.closest("table").hasClass("js-buy-orders")) {
+      amount *= parseFloat(tr.closest("table").find(".js-order-price").data("price"))
+    }
+    console.log(amount)
+    KeepersMarket.executeOrder(order_id, amount * Math.pow(10, Decimals)).then(updateAccountsInfo).then(updateOrdersInfo)
+  }
+})
+
 $(document).ready(function() {
   $(".js-cur-address").html(web3.eth.defaultAccount);
-  $(".js-market-address").html(SimpleMarket.address);
-
+  $(".js-market-address").html(KeepersMarket.address);
+  KeepersMarket.Log({from: web3.eth.accounts}, 'latest').then(function(event) { console.log(event.args.message+ ": "+event.args.value) });
   updateAccountsInfo();
   updateOrdersInfo();
 });

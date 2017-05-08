@@ -2,8 +2,6 @@
   "default": {
     "gas": "auto",
     "contracts": {
-      "EthToken": {
-      },
       "SafeMath": {
         "deploy": false
       },
@@ -11,6 +9,15 @@
         "deploy": false
       },
       "ERC20Basic": {
+        "deploy": false
+      },
+      "StandardToken": {
+        "deploy": false
+      },
+      "XbtToken": {
+        "deploy": true
+      },
+      "SimpleMarket": {
         "deploy": false
       }
     }

@@ -7,8 +7,8 @@ contract EthToken is StandardToken {
 
   string public name = "Eth";
   string public symbol = "ETH";
-  uint public decimals = 18;
-  uint public INITIAL_SUPPLY = 10000;
+  uint public decimals = 6;
+  uint public INITIAL_SUPPLY = 10000000000;
   address public owner;
 
   function EthToken() {

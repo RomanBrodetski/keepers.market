@@ -1,94 +1,212 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="css/app.css">
+    <title>exhange</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="js/app.js"></script>
   </head>
-  <body class="container">
-  <div class="row">
-    <div class="col-md-4">
-      <h4>Token balances</h4>
-          <div class="row hide js-wallet-info-template">
-            <h5 class="js-address"></h5>
-            <ul>
-            </ul>
-          </div>
-          <li class="hide js-token-info-template">
-              <b class="js-token"></b>: <span class="js-token-amount"></span>, allowed <span class="js-token-all"></span>.
-              <span class="hide js-set-all">
-                (<a>Set</a> to
-                <input style="width:60;" type="number" value="10" />)
-              </span>
-          </li>
-
-         <div class="row js-wallet-info">
-
-         </div>
-    </div>
-    <div class="col-md-4">
-      <h4>Orders</h4>
-        <li class="hide js-order-template">
-          <span class="js-order-sell-amount"></span>
-          /
-          <span class="js-order-buy-amount"></span>
-          (<span class="js-order-price"></span>)
-        </li>
-        <div class="col-md-2 js-buy-orders">
-          <h5> Buy </h5>
-
-            <ul>
-
-            </ul>
-        </div>
-        <div class="col-md-2 js-sell-orders">
-          <h5> Sell </h5>
-
-            <ul>
-
-            </ul>
-        </div>
+  <body>
+  <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <!-- <a class="navbar-brand" href="#"> -->
+      <a class="navbar-brand" href="#">Brand</a>
+      <!-- </a> -->
     </div>
   </div>
+</nav>
+  <div  class="container">
   <div class="row">
-    <h4>Create Order</h4>
-    <div class="col-md-3 js-buy-xbt">
-      <h5> Buy Xbt for Eth</h5>
-      <form class="form form-horizontal js-create-order-form">
-        <input type="hidden" name="demand-token" value="XBT">
-        <input type="hidden" name="supply-token" value="ETH">
-        <div class="form-group">
-          <label for="demand-amount" class="col-md-3">Amount</label>
-          <input style="width:80;"  required class="form-control col-md-3 js-update-supply" name="demand-amount" value="1">
+
+    <div class="col-md-8">
+      <div class="row">
+        <h4>Orders (ETH/XBT)</h4>
+        <div class="col-md-6">
+          <table class="hide">
+            <tr class="js-order-template">
+              <td class="js-order-keepers-order">
+              </td>
+              <td class="js-order-price">
+              </td>
+              <td class="js-order-volume">
+              </td>
+              <td class="js-order-execute">
+                <div class="input-group">
+                  <input class="form-control js-order-execute-amount" style="width:20;">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default"><span class="glyphicon glyphicon-send" aria-hidden="true"></span></button>
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <h5> Buy </h5>
+
+          <table class="js-buy-orders table">
+            <thead>
+            <th>Order (keepers)</th>
+            <th>Price</th>
+            <th>Volume</th>
+            <th></th>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
         </div>
-        <div class="form-group">
-          <label for="price" class="col-md-3">Price</label>
-          <input style="width:80;"  class="form-control col-md-3 js-update-supply" name="price">
+        <div class="col-md-6">
+          <h5> Sell </h5>
+          <table class="js-sell-orders table">
+            <thead>
+            <th>Order (keepers)</th>
+            <th>Price</th>
+            <th>Volume</th>
+            <th></th>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
         </div>
-        <div class="form-group">
-          <label for="supply-amount" class="col-md-3">ETH needed</label>
-          <input style="width:80;"  required class="form-control col-md-3" name="supply-amount">
-        </div>
-        <button class="btn btn-info js-create-order">Go!</button>
-      </form>
       </div>
-    <div class="col-md-3 js-buy-eth">
-      <h5> Buy Eth for Xbt</h5>
-      <form class="form form-horizontal js-create-order-form">
-        <input type="hidden" name="demand-token" value="ETH">
-        <input type="hidden" name="supply-token" value="XBT">
-        <div class="form-group">
-          <label for="demand-amount" class="col-md-3">Amount</label>
-          <input style="width:80;"  required class="form-control col-md-3 js-update-supply" name="demand-amount" value="1">
+      <div class="row">
+        <h4>Create Limit Order</h4>
+        <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a data-toggle="tab" href="#buy">Buy <span>ETH</span></a></li>
+        <li role="presentation"><a data-toggle="tab" href="#sell">Sell <span>ETH</span></a></li>
+        </ul>
+        <div class="tab-content">
+        <div id="buy" class="js-buy-eth tab-pane in active">
+          <form class="form-horizontal js-create-order-form" style="padding-top:10px">
+          <input type="hidden" name="demand-token" value="ETH">
+          <input type="hidden" name="supply-token" value="XBT">
+
+          <div class="form-group">
+            <label for="available" class="col-md-4 control-label">Available</label>
+            <div class="col-md-8">
+              <div class="input-group">
+                <input style="width:80;" disabled class="form-control js-XBT-available" name="available" aria-describedby="available-token">
+                <span class="input-group-addon" id="available-buy-token">XBT</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="available" class="col-md-4 control-label">Allowance</label>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input style="width:80;" disabled class="form-control js-XBT-allowed" name="allowed" aria-describedby="allowed-token">
+                <span class="input-group-addon" id="allowed-buy-token">XBT</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input style="width:80;" class="form-control" name="set-to-addon">
+                <span class="input-group-btn">
+                  <button class="btn btn-default js-set-all" type="button" data-token="XBT">Set</button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="price" class="col-md-4 control-label">Price</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;"  class="form-control js-update-supply" name="price" aria-describedby="price-token">
+                <span class="input-group-addon" id="price-token">XBT</span>
+              </div>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="demand-amount" class="col-md-4 control-label">Amount</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;"  required class="form-control js-update-supply" name="demand-amount" value="1" aria-describedby="amount-token">
+                <span class="input-group-addon" id="amount-token">ETH</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="supply-amount" class="col-md-4 control-label">Total</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;" disabled required class="form-control col-md-3" name="supply-amount" aria-describedby="demand-token">
+                <span class="input-group-addon" id="demand-token">XBT</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-success js-create-order pull-right">Create order</button>
+        </form>
         </div>
-        <div class="form-group">
-          <label for="price" class="col-md-3">Price</label>
-          <input style="width:80;"  class="form-control col-md-3 js-update-supply" name="price">
+        <div id="sell" class="tab-pane js-buy-xbt">
+          <form class="form-horizontal js-create-order-form" style="padding-top:10px" data-update-supply-invert="true">
+          <input type="hidden" name="demand-token" value="XBT">
+          <input type="hidden" name="supply-token" value="ETH">
+
+          <div class="form-group">
+            <label for="available" class="col-md-4 control-label">Available</label>
+            <div class="col-md-8">
+              <div class="input-group">
+                <input style="width:80;" disabled class="form-control js-ETH-available" name="available" aria-describedby="available-sell-token">
+                <span class="input-group-addon" id="available-sell-token">ETH</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="allowance" class="col-md-4 control-label">Allowance</label>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input style="width:80;" disabled class="form-control js-ETH-allowed" name="allowed" aria-describedby="allowed-sell-token">
+                <span class="input-group-addon" id="allowed-sell-token">ETH</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <input style="width:80;" class="form-control" name="set-to-addon">
+                <span class="input-group-btn">
+                  <button class="btn btn-default js-set-all" type="button" data-token="ETH">Set</button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="price" class="col-md-4 control-label">Price</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;"  class="form-control js-update-supply" name="price" aria-describedby="price-stoken">
+                <span class="input-group-addon" id="price-stoken">XBT</span>
+              </div>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="demand-amount" class="col-md-4 control-label">Amount</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;"  required class="form-control js-update-supply" name="supply-amount" value="1" aria-describedby="amount-stoken">
+                <span class="input-group-addon" id="amount-stoken">ETH</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="supply-amount" class="col-md-4 control-label">Total</label>
+               <div class="col-md-8">
+              <div class="input-group">
+              <input style="width:80;" disabled required class="form-control col-md-3" name="demand-amount" aria-describedby="demand-stoken">
+                <span class="input-group-addon" id="demand-stoken">XBT</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-success js-create-order pull-right">Create order</button>
+        </form>
         </div>
-        <div class="form-group">
-          <label for="supply-amount" class="col-md-3">XBT needed</label>
-          <input style="width:80;"  required class="form-control col-md-3" name="supply-amount">
         </div>
-        <button class="btn btn-info js-create-order">Go!</button>
-      </form>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h4>Keepers</h4>
+
     </div>
   </div>
   </body>
