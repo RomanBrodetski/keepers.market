@@ -9,6 +9,7 @@
   "buildDir": "dist/",
   "config": "config/",
   "plugins": {
-    "embark-babel":  { "files": ["**/*.js", "!**/jquery.min.js"], "presets": ["es2015"] }
+    "embark-babel": {}
+    // "embark-babel":  { "files": ["**/*.js", "!**/jquery.min.js"], "presets": ["es2015"] }
   }
 }

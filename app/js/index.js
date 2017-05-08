@@ -5,6 +5,8 @@ var Tokens = {
 
 var Decimals = 6
 
+console.log(web3.eth.defaultAccount)
+
 function updateAccountsInfo() {
   _.values(Tokens).forEach(function(token) {
     Promise
