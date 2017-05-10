@@ -1,10 +1,12 @@
-ReactDOM.render(<App alt={"hui"}/>, document.getElementById('root'));
+var Decimals = 6
 
+var Tokens = {
+  ETH: EthToken,
+  XBT: XbtToken
+}
 
-// var Tokens = {
-//   ETH: EthToken,
-//   XBT: XbtToken
-// }
+ReactDOM.render(<App />, document.getElementById('root'));
+
 
 // var Decimals = 6
 

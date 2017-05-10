@@ -1,34 +1,48 @@
-var App = React.createClass({
-  getInitialState: function () {
-    return {
-      showDefault: true
+class App extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      buyOrders: [],
+      sellOrders: []
     }
-  },
+    this.reloadOrders()
+  }
 
-  toggle: function (e) {
-    // Prevent following the link.
-    e.preventDefault();
+  reloadOrders() {
+    OrdersDAO.loadOrders().then((orders) => {
+      this.setState({
+        buyOrders:  _(orders).filter((order) => order.demandToken == "ETH"),
+        sellOrders: _(orders).filter((order) => order.demandToken == "XBT")
+      })
+    })
+  }
 
-    // Invert the chosen default.
-    // This will trigger an intelligent re-render of the component.
-    this.setState({ showDefault: !this.state.showDefault })
-  },
-
-  render: function () {
-    // Default to the default message.
-    var message = this.props.default;
-
-    // If toggled, show the alternate message.
-    if (!this.state.showDefault) {
-      message = this.props.alt;
-    }
-
+  render() {
     return (
       <div>
-        <h1>Hello {message}!</h1>
-        <a href="" onClick={this.toggle}>Toggle</a>
+        <div className={"row"}>
+          <div className={"col-md-8"}>
+            <div className={"col-md-6"}>
+              <OrderBook orders={this.state.buyOrders} mode={"BUY"}/>
+            </div>
+            <div className={"col-md-6"}>
+              <OrderBook orders={this.state.sellOrders} mode={"SELL"}/>
+            </div>
+          </div>
+        </div>
+        <div className={"row"}>
+          <div className={"col-md-8"}>
+            <div className={"col-md-6"}>
+              <CreateOrder demandToken={"ETH"} supplyToken={"XBT"} mode={"BUY"}/>
+            </div>
+            <div className={"col-md-6"}>
+              <CreateOrder demandToken={"XBT"} supplyToken={"ETH"} mode={"SELL"}/>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
-});
+}
 
