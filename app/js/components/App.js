@@ -6,7 +6,10 @@ class App extends React.Component {
       buyOrders: [],
       sellOrders: []
     }
+
     this.reloadOrders()
+
+    this.reloadOrders = this.reloadOrders.bind(this)
   }
 
   reloadOrders() {
@@ -34,10 +37,10 @@ class App extends React.Component {
         <div className={"row"}>
           <div className={"col-md-8"}>
             <div className={"col-md-6"}>
-              <CreateOrder demandToken={"ETH"} supplyToken={"XBT"} mode={"BUY"}/>
+              <CreateOrder demandToken={"ETH"} supplyToken={"XBT"} mode={"BUY"} updateOrders={this.reloadOrders}/>
             </div>
             <div className={"col-md-6"}>
-              <CreateOrder demandToken={"XBT"} supplyToken={"ETH"} mode={"SELL"}/>
+              <CreateOrder demandToken={"XBT"} supplyToken={"ETH"} mode={"SELL"} updateOrders={this.reloadOrders}/>
             </div>
           </div>
         </div>

@@ -19,15 +19,18 @@ class CreateOrder extends React.Component {
       amount: "",
       total: ""
     }
-    this.contract = Tokens[this.props.supplyToken]
+    this.supplyContract = Tokens[this.props.supplyToken]
+    this.demandContract = Tokens[this.props.demandToken]
     this.reloadInfo()
+
     this.handleInputChange = this.handleInputChange.bind(this)
     this.setAllowance      = this.setAllowance.bind(this)
     this.reloadInfo        = this.reloadInfo.bind(this)
+    this.createOrder       = this.createOrder.bind(this)
   }
 
   reloadInfo() {
-    TokensDAO.loadStatistics(this.contract).then((r) => (this.setState(
+    TokensDAO.loadStatistics(this.supplyContract).then((r) => (this.setState(
       {
         balance: r.balance,
         allowance: r.allowance,
@@ -52,11 +55,25 @@ class CreateOrder extends React.Component {
         total: parseFloat(value) * parseFloat(this.state.price)
       })
     }
+    if (name == "price") {
+      Object.assign(upd, {
+        total: parseFloat(this.state.amount) * parseFloat(value)
+      })
+    }
     this.setState(upd)
   }
 
-  setAllowance(event) {
-    TokensDAO.setAllowance(this.contract, this.state.newAllowance).then(this.reloadInfo)
+  setAllowance() {
+    TokensDAO.setAllowance(this.supplyContract, this.state.newAllowance).then(this.reloadInfo)
+  }
+
+  createOrder() {
+    const demandAmount = this.props.mode === "BUY" ? this.state.amount : this.state.total
+    const supplyAmount = this.props.mode === "BUY" ? this.state.total : this.state.amount
+    OrdersDAO.createOrder(demandAmount, supplyAmount, this.demandContract, this.supplyContract).then(() => {
+      this.props.updateOrders()
+      this.reloadInfo()
+    })
   }
 
   render() {
@@ -100,7 +117,7 @@ class CreateOrder extends React.Component {
                 <InputGroup value={this.state.total} caption={this.props.mode === "BUY" ? this.props.supplyToken : this.props.demandToken} name="total" onChange={this.handleInputChange}/>
             </div>
           </div>
-          <button className="btn btn-success pull-right">Create order</button>
+          <button type="button" className="btn btn-success pull-right" onClick={this.createOrder}>Create order</button>
         </form>
       );
   }
