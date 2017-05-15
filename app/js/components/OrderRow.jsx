@@ -3,17 +3,17 @@ class OrderRow extends React.Component {
   constructor(props) {
     super(props)
 
-    const primary = this.props.order.volume(this.props.primaryToken.symbol)
-    const secondary = this.props.order.volume(this.props.secondaryToken.symbol)
+    const primary = this.props.order.volume(this.props.primaryToken.contract.address)
+    const secondary = this.props.order.volume(this.props.secondaryToken.contract.address)
 
     this.state = {
       primary: {
         value: primary,
-        caption: this.valueToCaption(primary, this.props.primaryToken.contract.address)
+        caption: this.valueToCaption(primary, this.props.primaryToken.decimals)
       },
       secondary: {
         value: secondary,
-        caption: this.valueToCaption(secondary, this.props.secondaryToken.contract.address)
+        caption: this.valueToCaption(secondary, this.props.secondaryToken.decimals)
       }
     }
 
@@ -27,6 +27,7 @@ class OrderRow extends React.Component {
   }
 
   handleVolumeChange(event) {
+    event.preventDefault()
     var value = parseFloat(event.target.value) == NaN ? 0 : parseFloat(event.target.value)
     var name  = event.target.name
 
@@ -48,15 +49,17 @@ class OrderRow extends React.Component {
     })
   }
 
-  trade() {
-    const value = this.props.primaryToken.address == this.props.order.supplyToken ? this.state.primary.value : this.state.secondary.value
+  trade(e) {
+    e.preventDefault()
+    const value = this.props.primaryToken.contract.address == this.props.order.supplyToken ? this.state.primary.value : this.state.secondary.value
     OrdersDAO
       .trade(this.props.order.id, value)
       .then(this.props.onTrade)
   }
 
 
-  cancel() {
+  cancel(e) {
+    e.preventDefault()
     OrdersDAO
       .cancel(this.props.order.id)
       .then(this.props.onTrade)
@@ -67,7 +70,7 @@ class OrderRow extends React.Component {
             <tr>
               <td>
                 <span title={this.props.order.price(this.props.primaryToken.contract.address)}>
-                  {Math.floor(this.props.order.price(this.props.primaryToken.contract.address) * Math.pow(10, ShowDecimals)) / Math.pow(10, ShowDecimals)}
+                  {Math.round(this.props.order.price(this.props.primaryToken.contract.address) * Math.pow(10, ShowDecimals)) / Math.pow(10, ShowDecimals)}
                 </span>
               </td>
               <td>

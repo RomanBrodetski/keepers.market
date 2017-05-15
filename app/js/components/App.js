@@ -6,42 +6,42 @@ class App extends React.Component {
     // const pairs = _(this.props.tokens).map((t) => t.symbol)
     const tokens = _.indexBy(this.props.tokens, "symbol")
 
-    this.handleTokensLoaded = this.handleTokensLoaded.bind(this)
-    this.loadOrders = this.loadOrders.bind(this)
     this.loadBlockchainData = this.loadBlockchainData.bind(this)
+    this.loadInitialBlockchainData = this.loadInitialBlockchainData.bind(this)
 
-    this.loadBlockchainData()
+    this.loadInitialBlockchainData()
 
     this.state = {}
   }
 
-  loadBlockchainData() {
-    TokensDAO.loadInfos(Tokens).then(this.handleTokensLoaded)
-  }
-
-  handleTokensLoaded(tokens) {
-    this.render = this.renderLoaded.bind(this)
-
-    const symbols = _(tokens).map((t) => t.symbol)
-    const pairs = _.chain(MathUtil.pairs(symbols)).map((pair) => ({
-      pair: pair,
-      orders: {
-        buy:  [],
-        sell: []
-      }
-    })).indexBy("pair").value()
-
-    this.setState({
-      symbols: symbols,
-      tokens: _(tokens).indexBy("symbol"),
-      pairs: pairs,
-      activePair: MathUtil.pairs(symbols)[0]
+  loadInitialBlockchainData() {
+    TokensDAO.loadInfos(Tokens).then((tokens) => {
+      const symbols = _(tokens).map((t) => t.symbol)
+      const pairs = _.chain(MathUtil.pairs(symbols)).map((pair) => ({
+        pair: pair
+      })).indexBy("pair").value()
+      this.setState({
+        symbols: symbols,
+        tokens: _(tokens).indexBy("symbol"),
+        pairs: pairs,
+        activePair: MathUtil.pairs(symbols)[0]
+      })
+      this.loadBlockchainData()
+      this.render = this.renderLoaded
     })
-
-    this.loadOrders()
   }
 
-  loadOrders() {
+  loadBlockchainData() {
+    Promise.all(Object.values(this.state.tokens).map((tokenObj) => TokensDAO.loadStatistics(tokenObj.contract)))
+      .then((responses) => {
+        const tokens = _.chain(responses).zip(Object.values(this.state.tokens)).map((respTokenPair) => {
+          return Object.assign(respTokenPair[1], respTokenPair[0])
+        }).indexBy("symbol").value()
+        this.setState({
+          tokens: tokens
+        })
+      })
+
     OrdersDAO.loadOrders().then((orders) => {
       const pairs = _(this.state.pairs).mapObject((pairObj) => {
         const ordersBuy = _.chain(orders)
@@ -82,12 +82,15 @@ class App extends React.Component {
           </ul>
         </div>
         <div className="col-md-11">
-          <TradingPair
-            pair={this.state.activePair}
-            tokens={{buy: this.state.tokens[this.state.activePair[0]], sell: this.state.tokens[this.state.activePair[1]]}}
-            orders={this.state.pairs[this.state.activePair].orders}
-            onTrade={this.loadBlockchainData}
-            />
+          {this.state.pairs[this.state.activePair].orders && (
+            <TradingPair
+              pair={this.state.activePair}
+              tokens={{buy: this.state.tokens[this.state.activePair[0]], sell: this.state.tokens[this.state.activePair[1]]}}
+              orders={this.state.pairs[this.state.activePair].orders}
+              onTrade={this.loadBlockchainData}
+              />
+            )
+          }
         </div>
       </div>
     )

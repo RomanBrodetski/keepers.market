@@ -12,13 +12,10 @@ class TokensDAO {
   static loadInfo(tokenContract) {
     return Promise.all([
       tokenContract.symbol(),
-      tokenContract.decimals(),
-      this.loadStatistics(tokenContract)
+      tokenContract.decimals()
     ]).then((r) => ({
       symbol: r[0].toString(),
-      decimals: r[1].toNumber(),
-      balance: r[2].balance,
-      allowance: r[2].allowance
+      decimals: r[1].toNumber()
     }))
   }
 
