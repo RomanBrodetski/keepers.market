@@ -6,11 +6,19 @@ class OrdersDAO {
     .then((orders) => _(orders).map((order) => new Order(order)))
   }
 
+  static trade(orderId, volume) {
+    return KeepersMarket.executeOrder(orderId, volume, {gas: 500000})
+  }
+
+  static cancel(orderId) {
+    return KeepersMarket.cancelOrder(orderId)
+  }
+
   static createOrder(demandAmount, supplyAmount, demandToken, supplyToken) {
     return KeepersMarket.createLimitOrder(
-      supplyAmount * Math.pow(10, Decimals),
+      supplyAmount,
       supplyToken.address,
-      demandAmount * Math.pow(10, Decimals),
+      demandAmount,
       demandToken.address
     )
   }

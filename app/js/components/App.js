@@ -2,50 +2,104 @@ class App extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = {
-      buyOrders: [],
-      sellOrders: []
-    }
 
-    this.reloadOrders()
+    // const pairs = _(this.props.tokens).map((t) => t.symbol)
+    const tokens = _.indexBy(this.props.tokens, "symbol")
 
-    this.reloadOrders = this.reloadOrders.bind(this)
+    this.handleTokensLoaded = this.handleTokensLoaded.bind(this)
+    this.loadOrders = this.loadOrders.bind(this)
+    this.loadBlockchainData = this.loadBlockchainData.bind(this)
+
+    this.loadBlockchainData()
+
+    this.state = {}
   }
 
-  reloadOrders() {
+  loadBlockchainData() {
+    TokensDAO.loadInfos(Tokens).then(this.handleTokensLoaded)
+  }
+
+  handleTokensLoaded(tokens) {
+    this.render = this.renderLoaded.bind(this)
+
+    const symbols = _(tokens).map((t) => t.symbol)
+    const pairs = _.chain(MathUtil.pairs(symbols)).map((pair) => ({
+      pair: pair,
+      orders: {
+        buy:  [],
+        sell: []
+      }
+    })).indexBy("pair").value()
+
+    this.setState({
+      symbols: symbols,
+      tokens: _(tokens).indexBy("symbol"),
+      pairs: pairs,
+      activePair: MathUtil.pairs(symbols)[0]
+    })
+
+    this.loadOrders()
+  }
+
+  loadOrders() {
     OrdersDAO.loadOrders().then((orders) => {
+      const pairs = _(this.state.pairs).mapObject((pairObj) => {
+        const ordersBuy = _.chain(orders)
+                           .filter((order) =>
+                                order.demandToken == this.state.tokens[pairObj.pair[0]].contract.address &&
+                                order.supplyToken == this.state.tokens[pairObj.pair[1]].contract.address)
+                           .sortBy((o) => o.price(this.state.tokens[pairObj.pair[1]].symbol)).value()
+        const ordersSell = _.chain(orders)
+                           .filter((order) =>
+                                order.demandToken == this.state.tokens[pairObj.pair[1]].contract.address &&
+                                order.supplyToken == this.state.tokens[pairObj.pair[0]].contract.address)
+                           .sortBy((o) => o.price(this.state.tokens[pairObj.pair[0]].symbol)).value()
+
+        return {
+          pair: pairObj.pair,
+          orders: {
+            buy: ordersBuy,
+            sell: ordersSell
+          }
+        }
+      })
       this.setState({
-        buyOrders:  _(orders).filter((order) => order.demandToken == "ETH"),
-        sellOrders: _(orders).filter((order) => order.demandToken == "XBT")
+        pairs: pairs
       })
     })
   }
 
-  render() {
+  renderLoaded () {
     return (
-      <div>
-        <div className={"row"}>
-          <div className={"col-md-8"}>
-            <div className={"col-md-6"}>
-              <OrderBook orders={this.state.buyOrders} mode={"BUY"}/>
-            </div>
-            <div className={"col-md-6"}>
-              <OrderBook orders={this.state.sellOrders} mode={"SELL"}/>
-            </div>
-          </div>
+      <div className="row">
+        <div className="col-md-1">
+          <ul className="nav nav-pills nav-stacked">
+            {Object.values(this.state.pairs).map((pairObj) => (
+              <li key={pairObj.pair.join()} className={_(this.state.activePair).isEqual(pairObj.pair) ? "active" : ""}>
+                <a href="#">{pairObj.pair.join("/")}</a>
+                </li>
+            ))}
+          </ul>
         </div>
-        <div className={"row"}>
-          <div className={"col-md-8"}>
-            <div className={"col-md-6"}>
-              <CreateOrder demandToken={"ETH"} supplyToken={"XBT"} mode={"BUY"} updateOrders={this.reloadOrders}/>
-            </div>
-            <div className={"col-md-6"}>
-              <CreateOrder demandToken={"XBT"} supplyToken={"ETH"} mode={"SELL"} updateOrders={this.reloadOrders}/>
-            </div>
-          </div>
+        <div className="col-md-11">
+          <TradingPair
+            pair={this.state.activePair}
+            tokens={{buy: this.state.tokens[this.state.activePair[0]], sell: this.state.tokens[this.state.activePair[1]]}}
+            orders={this.state.pairs[this.state.activePair].orders}
+            onTrade={this.loadBlockchainData}
+            />
         </div>
       </div>
-    );
+    )
   }
-}
 
+  render() {
+    return (
+      <h1>
+        Loading...
+      </h1>
+    )
+  }
+
+
+}

@@ -1,18 +1,29 @@
 class Order {
   constructor(blockchainOrder) {
     this.id = blockchainOrder[1]
-    this.supplyAmount = blockchainOrder[0][0].toNumber() / Math.pow(10, Decimals)
-    this.supplyToken = _.findKey(Tokens, (tokenC => tokenC.address == blockchainOrder[0][1].toString()))
-    this.demandAmount = blockchainOrder[0][2].toNumber() / Math.pow(10, Decimals)
-    this.demandToken = _.findKey(Tokens, (tokenC => tokenC.address == blockchainOrder[0][3].toString()))
+    this.supplyAmount = blockchainOrder[0][0].toNumber()
+    this.supplyToken = blockchainOrder[0][1].toString()
+    this.demandAmount = blockchainOrder[0][2].toNumber()
+    this.demandToken = blockchainOrder[0][3].toString()
+    this.owner = blockchainOrder[0][4]
   }
 
-  volume(mode) {
-    return mode == "BUY" ? this.demandAmount : this.supplyAmount
+  volume(address) {
+    return address == this.supplyToken ? this.supplyAmount : this.demandAmount
   }
 
-  price (mode) {
-    return Math.pow(this.supplyAmount / this.demandAmount, (mode == "BUY" ? 1 : -1))
+  price(address) {
+    return Math.pow(this.supplyAmount / this.demandAmount, (address == this.supplyToken ? -1 : 1))
+  }
+
+  computeCounterpart(address, amount) {
+    const nom   = address == this.supplyToken ? this.demandAmount : this.supplyAmount
+    const denom = address == this.supplyToken ? this.supplyAmount : this.demandAmount
+
+    const step  = MathUtil.step(denom, nom)
+    const actual = Math.floor(amount / step) * step
+    const counterpart = actual * nom / denom
+    return [actual, counterpart]
   }
 
 }

@@ -85,9 +85,6 @@ contract SimpleMarket is EventfulMarket,
     uint supply_left = SafeMath.safeSub(order.supply_amount, boughtFromThisOrder);
     uint demand_left = SafeMath.safeSub(order.demand_amount, soldToThisOrder);
 
-    assert(supply_left >= 0);
-    assert(demand_left >= 0);
-
     if (demand_left > 0) {
       Log("Order is not fulfil. creating new one", 0);
       createOrder(order.owner, supply_left, order.supply_token, demand_left, order.demand_token);
@@ -95,7 +92,9 @@ contract SimpleMarket is EventfulMarket,
       if (supply_left > 0) {
         order.supply_token.transfer(order.owner, supply_left);
       }
+      // createOrder(order.owner, supply_left, order.supply_token, demand_left, order.demand_token);
     }
+
     delete orders[orderId];
   }
 
