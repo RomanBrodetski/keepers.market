@@ -13,9 +13,9 @@ contract KeepersMarket is SimpleMarket {
     assert(order.supply_amount > 0);
     if (lower_id == 0) {
       uint lowest_id = lowest_price_id_mapping[order.supply_token][order.demand_token];
-      Log("lowest_id", lowest_id);
+      // Log("lowest_id", lowest_id);
       if (lowest_id == 0) {
-        Log("order id set to", order_id);
+        // Log("order id set to", order_id);
         lowest_price_id_mapping[order.supply_token][order.demand_token] = order_id;
       } else {
         Order lowest = orders[lowest_id];

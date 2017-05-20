@@ -3,18 +3,16 @@ var Embark = require('embark');
 var EmbarkSpec = Embark.initTests();
 var web3 = EmbarkSpec.web3;
 
-describe("SimpleStorage", function() {
+describe("SimpleMarket", function() {
   before(function(done) {
     var contractsConfig = {
-      "SimpleStorage": {
-        args: [100]
-      }
+      "SimpleMarket": {}
     };
     EmbarkSpec.deployAll(contractsConfig, done);
   });
 
-  it("should set constructor value", function(done) {
-    SimpleStorage.storedData(function(err, result) {
+  it("should be deployed with an empty order book", function(done) {
+    SimpleMarket.last_order_id(function(err, result) {
       assert.equal(result.toNumber(), 100);
       done();
     });
