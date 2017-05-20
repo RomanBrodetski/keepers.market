@@ -7,6 +7,7 @@ class App extends React.Component {
     const tokens = _.indexBy(this.props.tokens, "symbol")
 
     this.loadBlockchainData = this.loadBlockchainData.bind(this)
+    this.changePair = this.changePair.bind(this)
     this.loadInitialBlockchainData = this.loadInitialBlockchainData.bind(this)
 
     this.loadInitialBlockchainData()
@@ -34,6 +35,7 @@ class App extends React.Component {
   loadBlockchainData() {
     Promise.all(Object.values(this.state.tokens).map((tokenObj) => TokensDAO.loadStatistics(tokenObj.contract)))
       .then((responses) => {
+        console.log(responses)
         const tokens = _.chain(responses).zip(Object.values(this.state.tokens)).map((respTokenPair) => {
           return Object.assign(respTokenPair[1], respTokenPair[0])
         }).indexBy("symbol").value()
@@ -69,19 +71,26 @@ class App extends React.Component {
     })
   }
 
+  changePair(e, pair) {
+    e.preventDefault()
+    this.setState({
+      activePair: pair
+    })
+  }
+
   renderLoaded () {
     return (
       <div className="row">
-        <div className="col-md-1">
+        <div className="col-md-2">
           <ul className="nav nav-pills nav-stacked">
             {Object.values(this.state.pairs).map((pairObj) => (
               <li key={pairObj.pair.join()} className={_(this.state.activePair).isEqual(pairObj.pair) ? "active" : ""}>
-                <a href="#">{pairObj.pair.join("/")}</a>
-                </li>
+                <a href="#" onClick={(e) => this.changePair(e, pairObj.pair)}>{pairObj.pair.join("/")}</a>
+              </li>
             ))}
           </ul>
         </div>
-        <div className="col-md-11">
+        <div className="col-md-10">
           {this.state.pairs[this.state.activePair].orders && (
             <TradingPair
               pair={this.state.activePair}

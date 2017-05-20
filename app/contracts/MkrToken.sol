@@ -11,7 +11,7 @@ contract MkrToken is StandardToken {
   uint public INITIAL_SUPPLY = 1000000000000000;
   address public owner;
 
-  function EthToken() {
+  function MkrToken() {
     owner = msg.sender;
     balances[msg.sender] = INITIAL_SUPPLY;
   }

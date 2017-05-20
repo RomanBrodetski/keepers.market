@@ -42,6 +42,3 @@ contract KeepersMarket is SimpleMarket {
   }
 
 }
-
-
-// I supply 100 ETH for 1 XBT. the price is 0.01 xbt/eth

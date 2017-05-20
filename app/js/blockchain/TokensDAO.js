@@ -1,5 +1,6 @@
 class TokensDAO {
   static loadStatistics(tokenContract) {
+    console.log("load stats invoked")
     return Promise.all([
       tokenContract.balanceOf(web3.eth.defaultAccount),
       tokenContract.allowance(web3.eth.defaultAccount, KeepersMarket.address)
@@ -28,6 +29,7 @@ class TokensDAO {
   }
 
   static setAllowance(tokenContract, amount) {
+    console.log("tokenContract", amount)
     return tokenContract.approve(KeepersMarket.address, amount)
   }
 }

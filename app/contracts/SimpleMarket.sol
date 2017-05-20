@@ -3,12 +3,13 @@ pragma solidity ^0.4.8;
 import './token/ERC20.sol';
 import "./Utilities.sol";
 import "./SafeMath.sol";
-import "./EventfulMarket.sol";
 
-contract SimpleMarket is EventfulMarket,
-                         Utilities,
-                         SafeMath
-                           {
+contract SimpleMarket is Utilities,
+                         SafeMath {
+
+
+  event Trade( uint sell_how_much, address indexed sell_which_token,
+                 uint buy_how_much, address indexed buy_which_token );
   event Log(
       string message,
       uint value

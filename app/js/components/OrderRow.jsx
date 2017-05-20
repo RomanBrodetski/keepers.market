@@ -70,8 +70,8 @@ class OrderRow extends React.Component {
             <tr>
               <td>
                 <span title={this.props.order.price(this.props.primaryToken.contract.address)}>
-                  {Math.round(this.props.order.price(this.props.primaryToken.contract.address) * Math.pow(10, ShowDecimals)) / Math.pow(10, ShowDecimals)}
-                </span>
+                  {MathUtil.round(this.props.order.price(this.props.primaryToken.contract.address) * Math.pow(10, this.props.primaryToken.decimals - this.props.secondaryToken.decimals), ShowDecimals)}
+              </span>
               </td>
               <td>
                 <span title={this.props.order.volume(this.props.primaryToken.contract.address)}>
@@ -81,13 +81,13 @@ class OrderRow extends React.Component {
               <td style={{width:130}}>
                 <div className="input-group input-group-sm">
                   <input type="number" className="form-control" step="10" name="primary" value={this.state.primary.caption} onChange={this.handleVolumeChange}/>
-                  <span>{this.state.primary.value}</span>
+                  <span style={{display:"none"}}>{this.state.primary.value}</span>
                 </div>
               </td>
               <td style={{width:130}}>
                 <div className="input-group input-group-sm">
                   <input type="number" className="form-control" name="secondary" value={this.state.secondary.caption} onChange={this.handleVolumeChange}/>
-                  <span>{this.state.secondary.value}</span>
+                  <span style={{display:"none"}}>{this.state.secondary.value}</span>
                 </div>
               </td>
               <td>

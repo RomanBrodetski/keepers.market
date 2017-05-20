@@ -33,24 +33,24 @@ class CreateOrder extends React.Component {
 
   handlePriceChange(event) {
     this.setState({
-      price: this.onlyFinite(parseFloat(event.target.value)),
-      total: this.onlyFinite(MathUtil.round(this.state.amount * parseFloat(event.target.value), ShowDecimals))
+      price: parseFloat(event.target.value),
+      total: this.onlyFinite(this.state.amount * parseFloat(event.target.value))
     })
   }
 
   handleAmountChange(event) {
-    const value = parseFloat(event.target.value) * Math.pow(10, this.props.supplyToken.decimals)
+    const value = parseFloat(event.target.value)
     this.setState({
       amount: this.onlyFinite(value),
-      total: this.onlyFinite(MathUtil.round(value * this.state.price, ShowDecimals))
+      total: this.onlyFinite(value * this.state.price)
     })
   }
 
   handleTotalChange(event) {
-    const value = parseFloat(event.target.value) * Math.pow(10, this.props.supplyToken.decimals)
+    const value = parseFloat(event.target.value)
     this.setState({
       total: this.onlyFinite(value),
-      amount: this.onlyFinite(MathUtil.round(value / this.state.price, ShowDecimals))
+      amount: this.onlyFinite(value / this.state.price)
     })
   }
 
@@ -72,8 +72,8 @@ class CreateOrder extends React.Component {
     const demandAmount = (this.props.mode === "BUY" ? this.state.amount : this.state.total)
     const supplyAmount = (this.props.mode === "BUY" ? this.state.total : this.state.amount)
     OrdersDAO.createOrder(
-      demandAmount,
-      supplyAmount,
+      demandAmount * Math.pow(10, this.props.demandToken.decimals),
+      supplyAmount * Math.pow(10, this.props.supplyToken.decimals),
       this.props.demandToken.contract,
       this.props.supplyToken.contract
     ).then(this.props.updateOrders)
@@ -108,7 +108,7 @@ class CreateOrder extends React.Component {
             <label className="col-md-3 control-label">Price</label>
             <div className="col-md-9">
               <InputGroup
-                value={this.state.price}
+                value={this.state.priceCaption}
                 caption={this.props.mode === "BUY" ? this.props.supplyToken.symbol : this.props.demandToken.symbol}
                 name="price"
                 onChange={this.handlePriceChange}/>
@@ -118,7 +118,7 @@ class CreateOrder extends React.Component {
             <label className="col-md-3 control-label">Amount</label>
             <div className="col-md-9">
               <InputGroup
-                value={MathUtil.format(this.state.amount, this.props.supplyToken.decimals, ShowDecimals)}
+                value={MathUtil.round(this.state.amount, ShowDecimals)}
                 caption={this.props.mode === "BUY" ? this.props.demandToken.symbol : this.props.supplyToken.symbol}
                 name="amount"
                 onChange={this.handleAmountChange}/>
@@ -128,7 +128,7 @@ class CreateOrder extends React.Component {
             <label className="col-md-3 control-label">Total</label>
                <div className="col-md-9">
                 <InputGroup
-                  value={MathUtil.format(this.state.total, this.props.demandToken.decimals, ShowDecimals)}
+                  value={MathUtil.round(this.state.total, ShowDecimals)}
                   caption={this.props.mode === "BUY" ? this.props.supplyToken.symbol : this.props.demandToken.symbol}
                   name="total"
                   onChange={this.handleTotalChange} />

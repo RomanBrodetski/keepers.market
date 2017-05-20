@@ -8,7 +8,7 @@ class MathUtil {
   }
 
   static round(value, decimals) {
-    return Math.round(value  * Math.pow(10, decimals)) / Math.pow(10, decimals)
+    return value === "" ? "" : Math.round(value  * Math.pow(10, decimals)) / Math.pow(10, decimals)
   }
 
   static step(a, b) {

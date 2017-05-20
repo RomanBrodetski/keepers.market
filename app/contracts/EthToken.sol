@@ -11,6 +11,7 @@ contract EthToken is StandardToken {
   uint public INITIAL_SUPPLY = 10000000000;
   address public owner;
 
+
   function EthToken() {
     owner = msg.sender;
     balances[msg.sender] = INITIAL_SUPPLY;
