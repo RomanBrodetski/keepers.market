@@ -5,8 +5,8 @@ import "./token/StandardToken.sol";
 
 contract XbtToken is StandardToken {
 
-  string public name = "Xbt";
-  string public symbol = "XBT";
+  string public name = "FUBAR";
+  string public symbol = "FUBAR";
   uint public decimals = 6;
   uint public INITIAL_SUPPLY = 10000000000;
 

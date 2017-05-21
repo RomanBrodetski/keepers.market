@@ -1,24 +1,32 @@
 {
-  "default": {
+  "default": {"gas": "auto",
+    "contracts": {
+      "SafeMath": {"deploy": false},
+      "ERC20": {"deploy": false},
+      "ERC20Basic": {"deploy": false},
+      "BasicToken": {"deploy": false},
+      "StandardToken": {"deploy": false},
+      "Utilites": {"deploy": false},
+      "Validations": {"deploy": false},
+      "SimpleMarket": {"deploy": false}
+    }
+  },
+  "testnet": {
     "gas": "auto",
     "contracts": {
-      "SafeMath": {
-        "deploy": false
+      "SafeMath": {"deploy": false},
+      "ERC20": {"deploy": false},
+      "ERC20Basic": {"deploy": false},
+      "BasicToken": {"deploy": false},
+      "StandardToken": {"deploy": false},
+      "Utilites": {"deploy": false},
+      "Validations": {"deploy": false},
+      "SimpleMarket": {"deploy": false},
+      "MkrToken": {
+        "address": "0x4bb514a7f83fbb13c2b41448208e89fabbcfe2fb"
       },
-      "ERC20": {
-        "deploy": false
-      },
-      "ERC20Basic": {
-        "deploy": false
-      },
-      "StandardToken": {
-        "deploy": false
-      },
-      "XbtToken": {
-        "deploy": true
-      },
-      "SimpleMarket": {
-        "deploy": false
+      "EthToken": {
+        "address": "0x53eccc9246c1e537d79199d0c7231e425a40f896"
       }
     }
   }

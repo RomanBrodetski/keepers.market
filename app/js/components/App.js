@@ -46,15 +46,18 @@ class App extends React.Component {
 
     OrdersDAO.loadOrders().then((orders) => {
       const pairs = _(this.state.pairs).mapObject((pairObj) => {
+        console.log(this.state.tokens[pairObj.pair[0]].contract.address)
+        console.log(this.state.tokens[pairObj.pair[1]].contract.address)
+        console.log(orders)
         const ordersBuy = _.chain(orders)
                            .filter((order) =>
-                                order.demandToken == this.state.tokens[pairObj.pair[0]].contract.address &&
-                                order.supplyToken == this.state.tokens[pairObj.pair[1]].contract.address)
+                                order.demandToken.toLowerCase() == this.state.tokens[pairObj.pair[0]].contract.address.toLowerCase() &&
+                                order.supplyToken.toLowerCase() == this.state.tokens[pairObj.pair[1]].contract.address.toLowerCase())
                            .sortBy((o) => o.price(this.state.tokens[pairObj.pair[1]].symbol)).value()
         const ordersSell = _.chain(orders)
                            .filter((order) =>
-                                order.demandToken == this.state.tokens[pairObj.pair[1]].contract.address &&
-                                order.supplyToken == this.state.tokens[pairObj.pair[0]].contract.address)
+                                order.demandToken.toLowerCase() == this.state.tokens[pairObj.pair[1]].contract.address.toLowerCase() &&
+                                order.supplyToken.toLowerCase() == this.state.tokens[pairObj.pair[0]].contract.address.toLowerCase())
                            .sortBy((o) => o.price(this.state.tokens[pairObj.pair[0]].symbol)).value()
 
         return {

@@ -1,5 +1,7 @@
 class Order {
   constructor(blockchainOrder) {
+    console.log("blockchainOrder")
+    console.log(blockchainOrder)
     this.id = blockchainOrder[1]
     this.supplyAmount = blockchainOrder[0][0].toNumber()
     this.supplyToken = blockchainOrder[0][1].toString()
