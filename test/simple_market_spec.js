@@ -12,7 +12,7 @@ describe("SimpleMarket", function() {
   });
 
   it("should be deployed with an empty order book", function(done) {
-    SimpleMarket.last_order_id(function(err, result) {
+    SimpleMarket.lastOrderId(function(err, result) {
       assert.equal(result.toNumber(), 100);
       done();
     });

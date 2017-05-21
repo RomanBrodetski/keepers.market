@@ -4,41 +4,41 @@ import './SimpleMarket.sol';
 
 contract KeepersMarket is SimpleMarket {
 
-  mapping(address => mapping(address => uint)) public lowest_price_id_mapping;
-  mapping(address => mapping(address => mapping(uint => uint))) public  higher_price_id_mapping;
+  mapping(address => mapping(address => uint)) public lowestPriceIdMapping;
+  mapping(address => mapping(address => mapping(uint => uint))) public  higherPriceIdMapping;
   // mapping(address => mapping(address => mapping(uint => uint))) public smaller_price_id;
 
-  function insertOrder(uint order_id, uint lower_id) {
-    Order order = orders[order_id];
-    assert(order.supply_amount > 0);
-    if (lower_id == 0) {
-      uint lowest_id = lowest_price_id_mapping[order.supply_token][order.demand_token];
-      // Log("lowest_id", lowest_id);
-      if (lowest_id == 0) {
-        // Log("order id set to", order_id);
-        lowest_price_id_mapping[order.supply_token][order.demand_token] = order_id;
+  function insertOrder(uint orderId, uint lowerId) {
+    Order order = orders[orderId];
+    assert(order.supplyAmount > 0);
+    if (lowerId == 0) {
+      uint lowestId = lowestPriceIdMapping[order.supplyToken][order.demandToken];
+      // Log("lowestId", lowestId);
+      if (lowestId == 0) {
+        // Log("order id set to", orderId);
+        lowestPriceIdMapping[order.supplyToken][order.demandToken] = orderId;
       } else {
-        Order lowest = orders[lowest_id];
+        Order lowest = orders[lowestId];
         assert(isLowerPriced(order, lowest));
-        lowest_price_id_mapping[order.supply_token][order.demand_token] = order_id;
-        higher_price_id_mapping[order.supply_token][order.demand_token][order_id] = lowest_id;
+        lowestPriceIdMapping[order.supplyToken][order.demandToken] = orderId;
+        higherPriceIdMapping[order.supplyToken][order.demandToken][orderId] = lowestId;
       }
     } else {
-      Order lower = orders[lower_id];
-      assert(lower.supply_token == order.supply_token);
-      assert(lower.demand_token == order.demand_token);
-      uint higher_id = higher_price_id_mapping[order.supply_token][order.demand_token][lower_id];
-      Order higher = orders[higher_id];
+      Order lower = orders[lowerId];
+      assert(lower.supplyToken == order.supplyToken);
+      assert(lower.demandToken == order.demandToken);
+      uint higherId = higherPriceIdMapping[order.supplyToken][order.demandToken][lowerId];
+      Order higher = orders[higherId];
       assert(isLowerPriced(lower, order));
       assert(isLowerPriced(order, higher));
-      higher_price_id_mapping[lower.supply_token][lower.demand_token][lower_id] = order_id;
-      higher_price_id_mapping[lower.supply_token][lower.demand_token][order_id] = higher_id;
+      higherPriceIdMapping[lower.supplyToken][lower.demandToken][lowerId] = orderId;
+      higherPriceIdMapping[lower.supplyToken][lower.demandToken][orderId] = higherId;
     }
   }
 
-  function isLowerPriced(Order smaller_order, Order higher_order) internal returns (bool) {
-    return safeMul(smaller_order.demand_amount, higher_order.supply_amount) <
-      safeMul(smaller_order.supply_amount, higher_order.demand_amount);
+  function isLowerPriced(Order smallerOrder, Order higherOrder) internal returns (bool) {
+    return safeMul(smallerOrder.demandAmount, higherOrder.supplyAmount) <
+      safeMul(smallerOrder.supplyAmount, higherOrder.demandAmount);
   }
 
 }
