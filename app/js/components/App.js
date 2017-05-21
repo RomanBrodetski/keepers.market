@@ -8,26 +8,42 @@ class App extends React.Component {
 
     this.loadBlockchainData = this.loadBlockchainData.bind(this)
     this.changePair = this.changePair.bind(this)
-    this.loadInitialBlockchainData = this.loadInitialBlockchainData.bind(this)
-
     this.loadInitialBlockchainData()
 
     this.state = {}
+  }
+
+  handleOrderBlockchainEvent(event) {
+    const trade = new Trade(event)
+
+    const pair = Object.values(this.state.pairs).map((e) => e.pair).find((p) =>
+      this.state.tokens[p[0]].contract.address == trade.demandToken && this.state.tokens[p[1]].contract.address == trade.supplyToken ||
+      this.state.tokens[p[1]].contract.address == trade.demandToken && this.state.tokens[p[0]].contract.address == trade.supplyToken)
+
+    this.setState({
+      trades: Object.assign({}, this.state.trades, {
+        [pair]: [].concat(this.state.trades[pair] || [], trade)
+      })
+    })
   }
 
   loadInitialBlockchainData() {
     TokensDAO.loadInfos(Tokens).then((tokens) => {
       const symbols = _(tokens).map((t) => t.symbol)
       const pairs = _.chain(MathUtil.pairs(symbols)).map((pair) => ({
-        pair: pair
+        pair: pair,
+        trades: []
       })).indexBy("pair").value()
       this.setState({
+        trades: {},
         symbols: symbols,
         tokens: _(tokens).indexBy("symbol"),
         pairs: pairs,
         activePair: MathUtil.pairs(symbols)[0]
       })
       this.loadBlockchainData()
+      KeepersMarket.Trade({from: web3.eth.accounts}, 'latest').then(this.handleOrderBlockchainEvent.bind(this))
+
       this.render = this.renderLoaded
     })
   }
@@ -35,7 +51,6 @@ class App extends React.Component {
   loadBlockchainData() {
     Promise.all(Object.values(this.state.tokens).map((tokenObj) => TokensDAO.loadStatistics(tokenObj.contract)))
       .then((responses) => {
-        console.log(responses)
         const tokens = _.chain(responses).zip(Object.values(this.state.tokens)).map((respTokenPair) => {
           return Object.assign(respTokenPair[1], respTokenPair[0])
         }).indexBy("symbol").value()
@@ -46,9 +61,6 @@ class App extends React.Component {
 
     OrdersDAO.loadOrders().then((orders) => {
       const pairs = _(this.state.pairs).mapObject((pairObj) => {
-        console.log(this.state.tokens[pairObj.pair[0]].contract.address)
-        console.log(this.state.tokens[pairObj.pair[1]].contract.address)
-        console.log(orders)
         const ordersBuy = _.chain(orders)
                            .filter((order) =>
                                 order.demandToken.toLowerCase() == this.state.tokens[pairObj.pair[0]].contract.address.toLowerCase() &&
@@ -99,6 +111,7 @@ class App extends React.Component {
               pair={this.state.activePair}
               tokens={{buy: this.state.tokens[this.state.activePair[0]], sell: this.state.tokens[this.state.activePair[1]]}}
               orders={this.state.pairs[this.state.activePair].orders}
+              trades={this.state.trades[this.state.activePair] || []}
               onTrade={this.loadBlockchainData}
               />
             )

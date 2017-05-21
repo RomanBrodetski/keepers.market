@@ -9,21 +9,17 @@ class OrderRow extends React.Component {
     this.state = {
       primary: {
         value: primary,
-        caption: this.valueToCaption(primary, this.props.primaryToken.decimals)
+        caption: MathUtil.format(primary, this.props.primaryToken.decimals)
       },
       secondary: {
         value: secondary,
-        caption: this.valueToCaption(secondary, this.props.secondaryToken.decimals)
+        caption: MathUtil.format(secondary, this.props.secondaryToken.decimals)
       }
     }
 
     this.handleVolumeChange = this.handleVolumeChange.bind(this)
     this.trade = this.trade.bind(this)
     this.cancel = this.cancel.bind(this)
-  }
-
-  valueToCaption(value, decimals) {
-    return MathUtil.round(value  / Math.pow(10, decimals), ShowDecimals)
   }
 
   handleVolumeChange(event) {
@@ -40,11 +36,11 @@ class OrderRow extends React.Component {
     this.setState({
       [name] : {
         value: calibrated[0],
-        caption: this.valueToCaption(calibrated[0], name == "primary" ? this.props.primaryToken.decimals : this.props.secondaryToken.decimals)
+        caption: MathUtil.format(calibrated[0], name == "primary" ? this.props.primaryToken.decimals : this.props.secondaryToken.decimals)
       },
       [name == "primary" ? "secondary" : "primary"] : {
         value: calibrated[1],
-        caption: this.valueToCaption(calibrated[1], name == "primary" ? this.props.secondaryToken.decimals : this.props.primaryToken.decimals)
+        caption: MathUtil.format(calibrated[1], name == "primary" ? this.props.secondaryToken.decimals : this.props.primaryToken.decimals)
       }
     })
   }
@@ -75,7 +71,7 @@ class OrderRow extends React.Component {
               </td>
               <td>
                 <span title={this.props.order.volume(this.props.primaryToken.contract.address)}>
-                  {this.valueToCaption(this.props.order.volume(this.props.primaryToken.contract.address), this.props.primaryToken.decimals)}
+                  {MathUtil.format(this.props.order.volume(this.props.primaryToken.contract.address), this.props.primaryToken.decimals)}
                 </span>
               </td>
               <td style={{width:130}}>

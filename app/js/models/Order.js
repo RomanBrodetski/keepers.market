@@ -1,13 +1,11 @@
 class Order {
-  constructor(blockchainOrder) {
-    console.log("blockchainOrder")
-    console.log(blockchainOrder)
-    this.id = blockchainOrder[1]
-    this.supplyAmount = blockchainOrder[0][0].toNumber()
-    this.supplyToken = blockchainOrder[0][1].toString()
-    this.demandAmount = blockchainOrder[0][2].toNumber()
-    this.demandToken = blockchainOrder[0][3].toString()
-    this.owner = blockchainOrder[0][4]
+  constructor(blockchainOrder, id) {
+    this.id = id
+    this.supplyAmount = blockchainOrder[0].toNumber()
+    this.supplyToken = blockchainOrder[1].toString()
+    this.demandAmount = blockchainOrder[2].toNumber()
+    this.demandToken = blockchainOrder[3].toString()
+    this.owner = blockchainOrder[4]
   }
 
   volume(address) {
@@ -27,5 +25,4 @@ class Order {
     const counterpart = actual * nom / denom
     return [actual, counterpart]
   }
-
 }

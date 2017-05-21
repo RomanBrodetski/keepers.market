@@ -8,10 +8,10 @@ contract SimpleMarket is Utilities, SafeMath {
 
 
     event Trade(
-        uint sellHowMuch,
-        address indexed sellWhichToken,
-        uint buyHowMuch,
-        address indexed buyWhichToken
+        uint supplyAmount,
+        address indexed supplyToken,
+        uint demandAmount,
+        address indexed demandToken
     );
 
 
@@ -81,6 +81,8 @@ contract SimpleMarket is Utilities, SafeMath {
 
         oldOrder.demandToken.transfer(oldOrder.owner, sellingAmount);
         newOrder.demandToken.transfer(newOrder.owner, buyingAmount);
+
+        Trade(sellingAmount, oldOrder.demandToken, buyingAmount, newOrder.demandToken);
 
         handleOrderDepletion(olderOrderId, buyingAmount, sellingAmount);
         handleOrderDepletion(newerOrderId, sellingAmount, buyingAmount);
